@@ -33,7 +33,9 @@ export class BaseService<T extends Document, CreateDTO, UpdateDTO> {
     return this.model
       .findOne(conditions)
       .orFail(
-        new NotFoundException(this.model.modelName || 'Enitty' + ' not found'),
+        new NotFoundException(
+          (this.model.modelName || 'Enitty') + ' not found',
+        ),
       );
   }
 
@@ -41,7 +43,9 @@ export class BaseService<T extends Document, CreateDTO, UpdateDTO> {
     return this.model
       .findByIdAndUpdate(id, updateDto, { new: true })
       .orFail(
-        new NotFoundException(this.model.modelName || 'Enitty' + ' not found'),
+        new NotFoundException(
+          (this.model.modelName || 'Enitty') + ' not found',
+        ),
       );
   }
 
@@ -49,7 +53,9 @@ export class BaseService<T extends Document, CreateDTO, UpdateDTO> {
     return this.model
       .findOneAndUpdate(conditions, updateDto, { new: true })
       .orFail(
-        new NotFoundException(this.model.modelName || 'Enitty' + ' not found'),
+        new NotFoundException(
+          (this.model.modelName || 'Enitty') + ' not found',
+        ),
       );
   }
 
@@ -57,7 +63,9 @@ export class BaseService<T extends Document, CreateDTO, UpdateDTO> {
     return this.model
       .findByIdAndDelete(id)
       .orFail(
-        new NotFoundException(this.model.modelName || 'Enitty' + ' not found'),
+        new NotFoundException(
+          (this.model.modelName || 'Enitty') + ' not found',
+        ),
       );
   }
 }
