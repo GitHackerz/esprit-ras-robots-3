@@ -44,10 +44,22 @@ export class CreateUserDto {
   @ApiProperty({
     description: 'User verification status',
     example: false,
+
     required: false,
     default: false,
   })
   @IsBoolean()
   @IsOptional()
   isVerified?: boolean;
+
+  @ApiProperty({
+    description: 'User verification status',
+    example: false,
+
+    required: false,
+    default: false,
+  })
+  @IsBoolean()
+  @IsOptional()
+  isActive?: boolean;
 }

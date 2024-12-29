@@ -37,4 +37,8 @@ export class UserService extends BaseService<
       },
     );
   }
+
+  async updateUserStatus(id: string, status: boolean) {
+    return this.update(id, { isActive: status });
+  }
 }

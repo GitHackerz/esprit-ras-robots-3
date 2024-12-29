@@ -15,4 +15,22 @@ export class TeamService extends BaseService<
   constructor(@InjectModel(Team.name) private readonly teamModel: Model<Team>) {
     super(teamModel);
   }
+
+  async togglePaymentStatus(id: string) {
+    const team = await this.teamModel.findById(id);
+    team.isPaid = !team.isPaid;
+    return team.save();
+  }
+
+  async togglePresenceStatus(id: string) {
+    const team = await this.teamModel.findById(id);
+    team.isPresent = !team.isPresent;
+    return team.save();
+  }
+
+  async toggleCoffeeBreakStatus(id: string) {
+    const team = await this.teamModel.findById(id);
+    team.hasCoffeeBreak = !team.hasCoffeeBreak;
+    return team.save();
+  }
 }

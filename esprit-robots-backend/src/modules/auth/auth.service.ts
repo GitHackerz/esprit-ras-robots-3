@@ -1,6 +1,5 @@
 import { MailerService } from '@nestjs-modules/mailer';
 import {
-  BadRequestException,
   ConflictException,
   Injectable,
   UnauthorizedException,
@@ -59,7 +58,7 @@ export class AuthService {
     return { token, refreshToken };
   }
 
-  async forgetPassword(email: string): Promise<void> {
+  async sendOtpCode(email: string): Promise<string> {
     const user = await this.userService.findOneOrFail({ email });
 
     const code = Math.floor(1000 + Math.random() * 9000).toString();
@@ -69,52 +68,39 @@ export class AuthService {
     user.codeExpires = expiresAt;
     await user.save();
 
+    return code;
+  }
+
+  async sendAccountVerification(email: string): Promise<void> {
+    const code = await this.sendOtpCode(email);
     await this.mailerService.sendMail({
-      to: user.email,
-      subject: 'Reset password',
-      template: 'reset-password',
+      to: email,
+      subject: 'Verify your email',
+      template: 'verify-account',
       context: {
         code,
       },
     });
   }
 
-  async resetPassword(email: string, newPassword: string): Promise<void> {
-    await this.userService.updatePassword(email, newPassword);
-  }
-
-  async signUp(createUserDto: CreateUserDto) {
-    const existedUser = await this.userService.findOne({
-      email: createUserDto.email,
-    });
-    if (existedUser)
-      throw new ConflictException('User with this email already exists');
-
-    const otp = Math.floor(1000 + Math.random() * 9000).toString();
-
-    try {
-      await this.mailerService.sendMail({
-        to: createUserDto.email,
-        subject: 'Verify your email',
-        template: 'verify-account',
-        context: {
-          otp,
-        },
-      });
-    } catch (error: any) {
-      console.error(error);
-      throw new BadRequestException('Error while sending an email');
-    }
-
-    const user = await this.userService.create({
-      ...createUserDto,
-      password: await cryptPassword(createUserDto.password),
-    });
-
-    user.otpCode = otp;
-    user.codeExpires = new Date(Date.now() + 15 * 60 * 1000); // 15 mins
+  async verifyAccount(otpDto: VerifyOtpDto) {
+    const user = await this.verifyOtp(otpDto);
+    user.isVerified = true;
 
     return user.save();
+  }
+
+  async forgetPassword(email: string): Promise<void> {
+    const code = await this.sendOtpCode(email);
+
+    await this.mailerService.sendMail({
+      to: email,
+      subject: 'Reset password',
+      template: 'reset-password',
+      context: {
+        code,
+      },
+    });
   }
 
   async verifyOtp(otpDto: VerifyOtpDto) {
@@ -124,7 +110,6 @@ export class AuthService {
     );
     user.otpCode = null;
     user.codeExpires = null;
-    user.isVerified = true;
 
     return user.save();
   }
@@ -143,6 +128,27 @@ export class AuthService {
       context: {
         otp,
       },
+    });
+
+    return user.save();
+  }
+
+  async resetPassword(email: string, newPassword: string): Promise<void> {
+    await this.userService.updatePassword(email, newPassword);
+  }
+
+  async signUp(createUserDto: CreateUserDto) {
+    const existedUser = await this.userService.findOne({
+      email: createUserDto.email,
+    });
+    if (existedUser)
+      throw new ConflictException('User with this email already exists');
+
+    //TODO: Send an email to the user to inform that the request for create an account is received
+
+    const user = await this.userService.create({
+      ...createUserDto,
+      password: await cryptPassword(createUserDto.password),
     });
 
     return user.save();

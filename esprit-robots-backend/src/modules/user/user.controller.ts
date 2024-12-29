@@ -64,6 +64,14 @@ export class UserController {
     return this.userService.remove(req.user.id);
   }
 
+  @Patch('active-status/:id')
+  async updateStatus(
+    @Param('id') id: string,
+    @Body('isActive') isActive: boolean,
+  ) {
+    return this.userService.updateUserStatus(id, isActive);
+  }
+
   @Post()
   async create(@Body() body: CreateUserDto) {
     delete body._id;
